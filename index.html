@@ -3,13 +3,187 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home — Wilson.dev</title>
+  <title>Home — alex.dev</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- your page content here -->
-
   <script src="navbar.js"></script>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-eyebrow">Penetration tester & security researcher</div>
+      <h1>I find the vulnerabilities<br><em>before attackers do.</em></h1>
+      <p class="hero-sub">Freelance pen-tester specialising in web application, network, and red team engagements. Based remotely — working with clients worldwide.</p>
+      <div class="hero-actions">
+        <a href="contact.html" class="btn-primary">Hire me</a>
+        <a href="case-studies.html" class="btn-ghost">View case studies →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof bar -->
+  <div class="proof">
+    <div class="container">
+      <div class="proof-inner">
+        <div class="proof-item">
+          <div class="proof-number">10<span>+</span></div>
+          <div class="proof-label">Engagements completed</div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-number">2<span>+</span></div>
+          <div class="proof-label">CVEs disclosed</div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-number">1<span>yr</span></div>
+          <div class="proof-label">Industry experience</div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-number">OSCP</div>
+          <div class="proof-label">+ CEH certified</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">What I do</div>
+        <h2 class="section-title">Security services</h2>
+        <p class="section-sub">Tailored engagements to find and fix weaknesses in your systems before someone else does.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>
+          </div>
+          <div class="service-name">Web app pen-test</div>
+          <div class="service-desc">OWASP Top 10, business logic flaws, auth bypasses, and API security testing.</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="service-name">Network pen-test</div>
+          <div class="service-desc">Internal and external infrastructure testing, firewall review, and lateral movement analysis.</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div class="service-name">Social engineering</div>
+          <div class="service-desc">Phishing simulations and pretexting campaigns to test your team's security awareness.</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+          </div>
+          <div class="service-name">Red teaming</div>
+          <div class="service-desc">Full-scope adversary simulation covering people, process, and technology over weeks.</div>
+        </div>
+      </div>
+      <p class="services-link">Need something specific? <a href="services.html">View all services and pricing →</a></p>
+    </div>
+  </section>
+
+  <!-- Featured case study -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Featured work</div>
+        <h2 class="section-title">Case study</h2>
+      </div>
+      <div class="case-card">
+        <div class="case-body">
+          <span class="case-tag">Fintech · Web application</span>
+          <h3>Critical authentication bypass in a payment processing platform</h3>
+          <p>Identified a chained vulnerability — an insecure direct object reference combined with a broken access control flaw — that allowed unauthenticated access to customer transaction records. Delivered a full remediation roadmap within 48 hours of discovery.</p>
+          <a href="case-studies.html" class="case-read">Read the full write-up →</a>
+        </div>
+        <div class="case-stats">
+          <div class="case-stat">
+            <div class="case-stat-val">Critical</div>
+            <div class="case-stat-label">CVSS severity rating</div>
+          </div>
+          <div class="case-stat">
+            <div class="case-stat-val">50,000+</div>
+            <div class="case-stat-label">Customer records protected</div>
+          </div>
+          <div class="case-stat">
+            <div class="case-stat-val">48 hrs</div>
+            <div class="case-stat-label">Time to remediation report</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Client feedback</div>
+        <h2 class="section-title">What clients say</h2>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-quote">"Found vulnerabilities our internal team and a previous auditor both missed. The report was thorough, clearly written, and actionable — our engineers had fixes shipped within a week. We'll be back for the next engagement."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">JM</div>
+          <div class="author-info">
+            <div class="author-name">J. Mwangi</div>
+            <div class="author-role">CTO, Fintech startup (name withheld)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest blog post -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Latest write-up</div>
+        <h2 class="section-title">From the blog</h2>
+      </div>
+      <a href="blog.html" class="blog-link">
+        <div class="blog-card">
+          <div class="blog-content">
+            <div class="blog-meta">CTF Write-up · June 2026</div>
+            <h3>How I chained an SSRF with an internal metadata endpoint to achieve RCE</h3>
+            <p>A walkthrough of a HackTheBox machine where a seemingly low-severity server-side request forgery turned into full remote code execution via AWS instance metadata.</p>
+          </div>
+          <div class="blog-arrow">→</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- CTA banner -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to secure your systems?</h2>
+      <p>Let's talk about your environment and what a realistic engagement looks like.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">alex<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 alex.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
