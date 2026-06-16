@@ -10,7 +10,6 @@ const workDropdownItems = [
 ];
 
 const mainLinks = [
-  { href: 'index.html', label: 'Home' },
   { href: 'services.html', label: 'Services' },
   { href: 'blog.html', label: 'Blog' },
   { href: 'tools.html', label: 'Tools' },
