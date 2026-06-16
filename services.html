@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services — wil.dev</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Page hero -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="hero-eyebrow">What I offer</div>
+      <h1>Security services & pricing</h1>
+      <p>Every engagement is scoped to your environment. No cookie-cutter audits — just thorough, adversary-minded testing with clear, actionable reports.</p>
+    </div>
+  </section>
+
+  <!-- Service detail cards -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Engagements</div>
+        <h2 class="section-title">What I test</h2>
+        <p class="section-sub">Each service below can be tailored in scope and duration. Get in touch to discuss your specific environment.</p>
+      </div>
+
+      <div class="service-detail-list">
+
+        <!-- Web app -->
+        <div class="service-detail-card">
+          <div class="service-detail-left">
+            <div class="service-detail-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>
+            </div>
+            <div class="service-detail-name">Web app pen-test</div>
+            <div class="service-detail-price">From $1,500</div>
+            <div class="service-detail-duration">5 – 10 business days</div>
+          </div>
+          <div class="service-detail-right">
+            <p class="service-detail-desc">A manual, in-depth assessment of your web application targeting authentication flaws, injection vulnerabilities, business logic errors, broken access controls, and API weaknesses. Goes well beyond automated scanning.</p>
+            <div class="service-includes-label">What's included</div>
+            <ul class="service-includes-list">
+              <li>Full OWASP Top 10 coverage</li>
+              <li>Authentication & session management testing</li>
+              <li>Business logic & access control review</li>
+              <li>API endpoint enumeration and testing</li>
+              <li>Detailed report with CVSS scores and reproduction steps</li>
+              <li>Remediation guidance and one free retest</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Network -->
+        <div class="service-detail-card">
+          <div class="service-detail-left">
+            <div class="service-detail-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <div class="service-detail-name">Network pen-test</div>
+            <div class="service-detail-price">From $2,000</div>
+            <div class="service-detail-duration">5 – 15 business days</div>
+          </div>
+          <div class="service-detail-right">
+            <p class="service-detail-desc">External and internal infrastructure testing to identify exploitable misconfigurations, weak credentials, unpatched services, and lateral movement paths. Covers both perimeter and internal network depending on scope.</p>
+            <div class="service-includes-label">What's included</div>
+            <ul class="service-includes-list">
+              <li>External perimeter assessment</li>
+              <li>Internal network testing (on-site or via VPN)</li>
+              <li>Service enumeration and vulnerability identification</li>
+              <li>Firewall and ACL review</li>
+              <li>Lateral movement and privilege escalation testing</li>
+              <li>Prioritised remediation report and retest</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Social engineering -->
+        <div class="service-detail-card">
+          <div class="service-detail-left">
+            <div class="service-detail-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </div>
+            <div class="service-detail-name">Social engineering</div>
+            <div class="service-detail-price">From $800</div>
+            <div class="service-detail-duration">3 – 7 business days</div>
+          </div>
+          <div class="service-detail-right">
+            <p class="service-detail-desc">Simulated phishing and pretexting campaigns to measure your team's susceptibility to human-layer attacks. Results are used to identify training gaps, not to penalise staff.</p>
+            <div class="service-includes-label">What's included</div>
+            <ul class="service-includes-list">
+              <li>Custom phishing campaign design and execution</li>
+              <li>Spear-phishing targeting key roles</li>
+              <li>Credential harvesting simulation (no real data stored)</li>
+              <li>Click-rate and reporting metrics per department</li>
+              <li>Awareness training recommendations</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Red team -->
+        <div class="service-detail-card">
+          <div class="service-detail-left">
+            <div class="service-detail-icon">
+              <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            </div>
+            <div class="service-detail-name">Red teaming</div>
+            <div class="service-detail-price">From $5,000</div>
+            <div class="service-detail-duration">3 – 6 weeks</div>
+          </div>
+          <div class="service-detail-right">
+            <p class="service-detail-desc">A full-scope adversary simulation targeting your people, processes, and technology simultaneously. Designed to test your detection and response capabilities as much as your defences. Coordinated with a trusted internal contact only.</p>
+            <div class="service-includes-label">What's included</div>
+            <ul class="service-includes-list">
+              <li>Initial reconnaissance and OSINT gathering</li>
+              <li>Multi-vector attack simulation (phishing, network, physical if agreed)</li>
+              <li>Persistence and lateral movement</li>
+              <li>Objective-based testing (data exfiltration, domain takeover etc.)</li>
+              <li>Full attack narrative and timeline report</li>
+              <li>Detection gap analysis and blue team debrief</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pricing note -->
+      <div class="pricing-note">
+        <p class="pricing-note-text"><strong>Prices are indicative starting points.</strong> Final cost depends on scope, number of targets, and engagement duration. All engagements include a signed NDA, rules of engagement document, and written authorisation letter before testing begins.</p>
+        <a href="contact.html" class="btn-primary">Get a quote</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Common questions</div>
+        <h2 class="section-title">FAQ</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-question-text">Do you sign an NDA before testing?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">Yes, always. Before any engagement begins I provide a mutual NDA, a rules of engagement document, and a written authorisation letter. No testing starts without signed paperwork in place.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-question-text">How long does a typical engagement take?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">It depends on scope. A focused web app test can be completed in 5 days. A full red team engagement typically runs 3–6 weeks. I'll give you a realistic timeline during scoping so you can plan around it.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-question-text">What does the report look like?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">Every report includes an executive summary for non-technical stakeholders, a technical findings section with CVSS scores, reproduction steps, screenshots or proof-of-concept code, and a prioritised remediation roadmap. Reports are delivered in PDF format, typically within 48 hours of testing completion.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-question-text">Do you offer retesting after fixes are applied?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">Yes. All engagements include one free retest of the identified findings within 30 days of the original report delivery. This lets you verify that fixes have been applied correctly before closing out the engagement.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-question-text">Can you work with clients outside Kenya?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">Yes, I work remotely with clients worldwide. For engagements requiring on-site presence, travel can be arranged and costed separately. Most web application and network tests can be conducted fully remotely.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-question-text">What information do you need to provide a quote?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">For a web app test: the number of applications, rough page/endpoint count, and whether authentication testing is in scope. For network testing: IP ranges or number of hosts. The more detail you can share, the more accurate the quote. Fill out the contact form and I'll follow up within 24 hours.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to get started?</h2>
+      <p>Fill out the contact form and I'll get back to you within 24 hours to discuss scope and timelines.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+  </script>
+
+</body>
+</html>

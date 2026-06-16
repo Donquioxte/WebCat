@@ -28,7 +28,7 @@ const dropdownItems = workDropdownItems.map(item => `
 
 document.body.insertAdjacentHTML('afterbegin', `
   <nav>
-    <a class="brand" href="index.html">alex<span>.</span>dev</a>
+    <a class="brand" href="index.html">wil<span>.</span>dev</a>
     <ul class="nav-links">
       ${mainNavLinks}
       <li class="dropdown-wrap ${isWorkActive ? 'active' : ''}">
