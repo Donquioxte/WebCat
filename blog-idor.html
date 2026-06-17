@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why IDOR Vulnerabilities Are Still Everywhere in 2026 — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--research">Research</span>
+        <span class="blog-difficulty blog-difficulty--beginner">Beginner</span>
+      </div>
+      <h1>Why IDOR Vulnerabilities Are Still Everywhere in 2026</h1>
+      <p class="post-hero-sub">Insecure Direct Object References have been on the OWASP Top 10 for years. So why do they keep showing up in modern applications — including ones built by teams that know better?</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> May 28, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 8 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">The vulnerability that refuses to die</h2>
+        <p>There is something almost embarrassing about IDOR. It is not a complex memory corruption bug or a cryptographic weakness requiring a PhD to understand. At its core, it comes down to a single question the application forgot to ask: <strong>does this user actually own this resource?</strong></p>
+        <p>And yet, year after year, IDOR consistently ranks among the most commonly reported vulnerabilities in bug bounty programs and real-world penetration tests. In 2026, with AI-assisted development, massive API ecosystems, and teams that have access to more security tooling than ever before, the problem has not shrunk. If anything, it has more surface area to hide in.</p>
+        <p>This post breaks down what IDOR is, why it keeps happening, and what secure authorization actually looks like in practice.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="what-is-idor">What is IDOR?</h2>
+        <p>IDOR stands for <strong>Insecure Direct Object Reference</strong>. It occurs when an application exposes a reference to an internal object — a database record, a file, a user account — and fails to verify whether the requesting user has permission to access it.</p>
+        <p>The classic example looks like this. You log into a web application and notice your profile URL:</p>
+
+        <div class="post-code">GET /api/users/1042/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...</div>
+
+        <p>You change <code>1042</code> to <code>1043</code> and send the request. If the server returns someone else's profile data without any error, that is an IDOR vulnerability. The application authenticated you correctly — it knows who you are — but it never checked whether you were allowed to view user 1043's data.</p>
+
+        <div class="post-callout">
+          <strong>Authentication vs. Authorization</strong>
+          These two concepts are often confused. Authentication answers "who are you?" — it verifies your identity. Authorization answers "what are you allowed to do?" — it checks your permissions. IDOR is always an authorization failure, not an authentication one.
+        </div>
+
+        <h2 id="real-world">What IDOR looks like in the real world</h2>
+        <p>IDOR is not limited to user profile endpoints. It shows up anywhere an application uses a predictable identifier to reference a resource. Some common patterns:</p>
+
+        <h3>File downloads</h3>
+        <p>Applications that store documents often reference them with sequential IDs:</p>
+        <div class="post-code">GET /documents/download?id=892</div>
+        <p>Incrementing or decrementing that value may expose invoices, contracts, or medical records belonging to other users. The file is served based purely on the ID — no ownership check in sight.</p>
+
+        <h3>API endpoints</h3>
+        <p>Modern APIs are a goldmine for IDOR. Every endpoint that accepts a resource identifier is a potential target:</p>
+        <div class="post-code"><span class="code-comment"># These are all common IDOR targets</span>
+GET  /api/orders/5001
+GET  /api/messages/thread/88
+PUT  /api/invoices/3312/status
+DELETE /api/accounts/991</div>
+        <p>The risk is compounded by the fact that API responses are often more data-rich than web UI responses — a single IDOR on an API endpoint can leak significantly more sensitive information than the same flaw on an HTML page.</p>
+
+        <h3>Multi-tenant SaaS platforms</h3>
+        <p>Platforms that serve multiple organisations from a shared infrastructure are particularly vulnerable. A tenant isolation failure — where one customer can access another's data by manipulating a resource ID — is one of the most severe forms of IDOR and one of the hardest to catch in testing.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="why-still">Why is this still happening in 2026?</h2>
+        <p>This is the question worth dwelling on. The vulnerability class is well documented. The fix is conceptually simple. So why does it keep appearing?</p>
+
+        <h3>The API explosion</h3>
+        <p>A decade ago, a web application might have had dozens of server-side routes. Today, a mid-sized SaaS product might expose hundreds of API endpoints across REST, GraphQL, and internal service-to-service APIs. Each one of those endpoints is a potential authorization check that someone needs to write and maintain. The sheer volume makes gaps inevitable.</p>
+
+        <h3>Microservices and inconsistent authorization</h3>
+        <p>In a monolithic application, you might have one centralized middleware handling authorization logic. In a microservices architecture, each service often implements its own access control. When teams are moving fast and services are owned by different people, authorization policies become inconsistent. One service checks ownership. Another assumes the API gateway already handled it. Neither is right.</p>
+
+        <h3>AI-generated code</h3>
+        <p>This is the most interesting new wrinkle. AI coding assistants are genuinely good at generating working functionality quickly. Ask an LLM to write an endpoint that retrieves an order by ID and it will produce clean, functional code. What it often will not produce — unless you explicitly ask — is the authorization check that ensures the requesting user owns that order. The code works. The security layer is missing.</p>
+
+        <h3>Authorization is hard to test automatically</h3>
+        <p>Unlike SQL injection or XSS, IDOR requires business context to detect reliably. A scanner can identify that an endpoint accepts a numeric ID parameter. It cannot easily determine whether user A should be allowed to access resource B without understanding the application's data model. This means IDOR often slips through automated security scans and only surfaces during manual testing or in production via a bug bounty report.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="finding-it">How to find IDOR during testing</h2>
+        <p>Manual testing is still the most reliable approach. The process is straightforward:</p>
+        <ol>
+          <li>Create two test accounts — call them User A and User B.</li>
+          <li>As User A, perform actions that create or access resources: place an order, upload a file, send a message.</li>
+          <li>Note all the identifiers that appear in requests — in URLs, request bodies, and headers.</li>
+          <li>Switch to User B's session and attempt to access User A's resources using those identifiers.</li>
+          <li>If User B can access User A's data, the application is vulnerable.</li>
+        </ol>
+
+        <p>Burp Suite makes this significantly easier. You can use the <strong>Authorize</strong> extension to automatically replay requests with a different session token, flagging any responses that return the same data as the original request. It is not foolproof, but it catches a large percentage of simple IDOR issues quickly.</p>
+
+        <div class="post-callout">
+          <strong>Tip from practice</strong>
+          Do not just test GET requests. Some of the most impactful IDOR vulnerabilities are on write operations — PUT, PATCH, DELETE. Being able to delete another user's account or modify their subscription plan is significantly more damaging than just reading their profile.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="fixing-it">What secure authorization looks like</h2>
+        <p>The fix for IDOR is conceptually simple: never trust client-supplied identifiers without verifying ownership server-side. In practice, this means every data access query should include the authenticated user's identity as a constraint:</p>
+
+        <div class="post-code"><span class="code-comment"># Vulnerable — fetches the order regardless of who owns it</span>
+order = Order.find(params[:id])
+
+<span class="code-highlight"># Secure — scopes the query to the current user's orders only</span>
+order = current_user.orders.find(params[:id])</div>
+
+        <p>The second version is not just more secure — it will raise a "record not found" error if the order belongs to a different user, so the behavior is also correct from a functional standpoint.</p>
+
+        <h3>Use unpredictable identifiers</h3>
+        <p>Replacing sequential integer IDs with UUIDs or random tokens does not fix the underlying authorization flaw, but it does make exploitation significantly harder. Guessing <code>f8c1f3d9-b82f-4af9-a3c1-9d2e7b6f1a3c</code> is a different challenge to incrementing <code>1042</code> to <code>1043</code>. Use both — unpredictable IDs and proper authorization checks — not one as a substitute for the other.</p>
+
+        <h3>Centralize authorization logic</h3>
+        <p>In larger applications, duplicating authorization checks across every controller or handler is a recipe for gaps. A centralized authorization layer — whether that is a library, a middleware, or a policy framework — ensures consistent enforcement and makes the checks easier to audit.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>IDOR is not a sophisticated vulnerability. It does not require exploit chains or advanced techniques. It requires one thing: that someone forgot to ask whether a user was allowed to access a resource. In 2026, with more API endpoints, more services, and more AI-generated code than ever, there are more places for that question to go unasked.</p>
+        <p>If you are learning web security, IDOR is one of the highest-value vulnerability classes to understand — both because it is so common and because finding it teaches you to think carefully about the gap between authentication and authorization, which underpins a huge proportion of real-world security issues.</p>
+        <p>Start with two accounts. Start changing IDs. See what the application tells you.</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">The vulnerability that refuses to die</a></li>
+          <li><a href="#what-is-idor">What is IDOR?</a></li>
+          <li><a href="#real-world">Real-world examples</a></li>
+          <li><a href="#why-still">Why is this still happening?</a></li>
+          <li><a href="#finding-it">How to find IDOR</a></li>
+          <li><a href="#fixing-it">What secure auth looks like</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="#" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">My Go-To Recon Toolkit for Web App Engagements</div>
+        </a>
+        <a href="#" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Breaking JWT Authentication — Common Misconfigurations Developers Make</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Found this useful?</h2>
+      <p>If you have a system that needs testing, I offer web application pen-tests that cover IDOR and the full OWASP Top 10.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

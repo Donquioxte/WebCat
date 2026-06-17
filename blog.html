@@ -52,7 +52,7 @@
       <!-- Post list -->
       <div class="blog-grid">
 
-        <a href="#" class="blog-link">
+        <a href="blog-idor.html" class="blog-link">
           <div class="blog-grid-card">
             <div class="blog-grid-body">
               <div class="blog-category blog-category--research">Research</div>
@@ -223,15 +223,44 @@
       </div>
     </div>
   </footer>
-
   <script>
-    const filterBtns = document.querySelectorAll('.blog-filter-btn');
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+  const filterBtns = document.querySelectorAll('.blog-filter-btn');
+  const cards = document.querySelectorAll('.blog-grid .blog-link');
+  const featured = document.querySelector('.blog-featured');
+
+  const categoryMap = {
+    'All posts': null,
+    'CTF Write-ups': 'ctf',
+    'Research': 'research',
+    'Tools': 'tools',
+    'Educational': 'educational',
+  };
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const selected = categoryMap[btn.textContent.trim()];
+
+      // Handle featured post visibility
+      if (!selected || featured.querySelector('.blog-category--' + selected)) {
+        featured.style.display = '';
+      } else {
+        featured.style.display = 'none';
+      }
+
+      // Handle post cards
+      cards.forEach(card => {
+        const cat = card.querySelector('.blog-category');
+        if (!selected || cat.classList.contains('blog-category--' + selected)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
       });
     });
+  });
   </script>
 
 </body>
