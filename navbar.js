@@ -30,7 +30,7 @@ document.body.insertAdjacentHTML('afterbegin', `
     <ul class="nav-links">
       ${mainNavLinks}
       <li class="dropdown-wrap ${isWorkActive ? 'active' : ''}">
-        <button class="dropdown-toggle" id="workToggle">
+        <button class="work-toggle" id="workToggle">
           Work <span class="arrow">▾</span>
         </button>
         <div class="dropdown-menu" id="workMenu">
