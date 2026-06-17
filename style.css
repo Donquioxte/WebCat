@@ -1,5 +1,6 @@
-/* ── Tokens ── */
-:root {
+/* ── Tokens — dark (default) ── */
+:root,
+[data-theme="dark"] {
   --purple: #7F77DD;
   --purple-dark: #534AB7;
   --purple-dim: #26215C;
@@ -10,6 +11,22 @@
   --text: #fff;
   --muted: #a0a0a0;
   --dim: #555;
+  --testimonial-quote: #e0e0e0;
+}
+
+/* ── Tokens — light ── */
+[data-theme="light"] {
+  --purple: #534AB7;
+  --purple-dark: #3d3591;
+  --purple-dim: #ebe9f8;
+  --bg: #f8f8f8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f0f0;
+  --border: #e0e0e0;
+  --text: #0f0f0f;
+  --muted: #555;
+  --dim: #999;
+  --testimonial-quote: #222;
 }
 
 /* ── Reset ── */

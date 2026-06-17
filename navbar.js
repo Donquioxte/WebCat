@@ -1,7 +1,6 @@
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
 const workPages = ['case-studies.html', 'cve.html'];
-
 const isWorkActive = workPages.includes(currentPage);
 
 const workDropdownItems = [
@@ -39,15 +38,37 @@ document.body.insertAdjacentHTML('afterbegin', `
         </div>
       </li>
     </ul>
-    <a class="nav-cta" href="contact.html">Hire me</a>
+    <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+      <a class="nav-cta" href="contact.html">Hire me</a>
+    </div>
   </nav>
 `);
+
+// Theme logic
+const savedTheme = localStorage.getItem('theme') || 'dark';
+applyTheme(savedTheme);
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-bs-theme', theme);
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  const icon = document.querySelector('.theme-icon');
+  if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.closest('#themeToggle')) {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+    return;
+  }
+  document.querySelector('.dropdown-wrap').classList.remove('open');
+});
 
 document.getElementById('workToggle').addEventListener('click', function(e) {
   e.stopPropagation();
   document.querySelector('.dropdown-wrap').classList.toggle('open');
-});
-
-document.addEventListener('click', function() {
-  document.querySelector('.dropdown-wrap').classList.remove('open');
 });
