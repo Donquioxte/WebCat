@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Go-To Recon Toolkit for Web App Engagements — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--tools">Tools</span>
+        <span class="blog-difficulty blog-difficulty--beginner">Beginner</span>
+      </div>
+      <h1>My Go-To Recon Toolkit for Web App Engagements</h1>
+      <p class="post-hero-sub">Before a single payload gets fired, the outcome of an engagement is usually already being decided — by how thorough the recon was. Here's the toolkit I reach for first, and why each tool earns its place.</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> May 14, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 10 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">Why recon decides the engagement</h2>
+        <p>It's tempting to think of penetration testing as the moment you find the clever injection point or chain together an exploit. In practice, most of the real work — and most of the value — happens before that, during recon. A target you only partially mapped is a target with vulnerabilities you'll never see, simply because you never knew that subdomain, that endpoint, or that forgotten staging environment existed.</p>
+        <p>This post walks through the recon workflow I use on web application engagements, the tools behind each step, and why I reach for them specifically.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="subdomains">Step 1: Subdomain enumeration</h2>
+        <p>The attack surface of a modern web application is rarely just the main domain. Staging environments, internal admin panels, forgotten marketing microsites, and old API versions often live on subdomains that were never meant to stay exposed.</p>
+
+        <div class="post-code"><span class="code-comment"># Passive enumeration — pulls from certificate transparency logs, DNS aggregators etc.</span>
+amass enum -passive -d target.com -o subdomains.txt
+
+<span class="code-comment"># Active enumeration — brute forces against the actual DNS</span>
+amass enum -active -d target.com -brute -o subdomains_active.txt</div>
+
+        <p>I run passive enumeration first since it generates no traffic to the target and casts a wide net using public data sources. Active enumeration follows once I have a baseline, since it catches subdomains that passive sources miss but generates DNS queries the target can see.</p>
+
+        <div class="post-callout">
+          <strong>Don't skip certificate transparency</strong>
+          A huge number of subdomains get discovered simply by checking <code>crt.sh</code> or similar certificate transparency logs. Any time an organisation issues a TLS certificate, the subdomain it covers becomes publicly logged — permanently. This is one of the highest signal, lowest effort recon steps available.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="alive">Step 2: Filtering for what's actually alive</h2>
+        <p>A subdomain list of a few thousand entries is not useful until you know which ones are actually serving something. This is where <code>httpx</code> comes in — it probes each host and reports back status codes, titles, and technologies in use.</p>
+
+        <div class="post-code">cat subdomains.txt | httpx -status-code -title -tech-detect -o alive_hosts.txt</div>
+
+        <p>This single command turns a flat list of names into a prioritised target list. A host returning a 200 with a login page and a visible CMS version is worth far more attention early on than one returning a generic 403.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="content-discovery">Step 3: Content discovery</h2>
+        <p>Once I know which hosts are alive, the next question is what's actually on them beyond the obvious pages. This is where directory and file brute-forcing earns its keep — looking for backup files, exposed config endpoints, admin panels, and old API routes that were never properly decommissioned.</p>
+
+        <div class="post-code"><span class="code-comment"># ffuf — fast, flexible, and good with custom wordlists</span>
+ffuf -u https://target.com/FUZZ -w wordlist.txt -mc 200,301,302,403 -o ffuf_results.json</div>
+
+        <p>I tend to run this with a few different wordlists depending on the target's stack — a generic content discovery list first, then a more targeted one based on whatever framework <code>httpx</code> identified. A Laravel app and a Django app have very different files worth probing for.</p>
+
+        <h3>API endpoint discovery</h3>
+        <p>If the target exposes a JavaScript-heavy front end, the compiled JS bundles themselves are often a goldmine. Endpoint paths, internal API routes, and sometimes even hardcoded tokens get shipped to the client without anyone noticing.</p>
+
+        <div class="post-code"><span class="code-comment"># Pull all JS files, then grep for likely endpoint paths</span>
+katana -u https://target.com -jc -o js_files.txt
+cat js_files.txt | grep -Eo '"\/[a-zA-Z0-9\/_-]+"' | sort -u</div>
+
+        <hr class="post-divider">
+
+        <h2 id="vuln-scanning">Step 4: Lightweight vulnerability scanning</h2>
+        <p>Once I have a solid picture of the live attack surface, I run a fast, low-noise scan to catch known misconfigurations and common vulnerability patterns before diving into manual testing. This isn't a replacement for manual work — it's a way to avoid spending an hour manually testing for something a template-based scanner would have flagged in thirty seconds.</p>
+
+        <div class="post-code">nuclei -l alive_hosts.txt -t cves/ -t misconfiguration/ -severity medium,high,critical -o nuclei_results.txt</div>
+
+        <div class="post-callout">
+          <strong>Scanners find what they're told to look for</strong>
+          Nuclei is only as good as its template set, and it will never replace understanding the application's business logic. Treat it as a triage step, not a substitute for manually walking through the app and thinking about how each feature could be abused.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="organising">Step 5: Keeping it organised</h2>
+        <p>Recon generates a lot of output fast, and disorganised recon is nearly as bad as no recon at all if you can't act on what you found. I keep a simple folder structure per engagement:</p>
+
+        <div class="post-code">target-name/
+├── recon/
+│   ├── subdomains.txt
+│   ├── alive_hosts.txt
+│   ├── ffuf_results.json
+│   └── nuclei_results.txt
+├── notes.md
+└── screenshots/</div>
+
+        <p>A plain markdown notes file might sound low-tech, but it forces me to write down hypotheses as I go — "this endpoint looks like it might be missing an ownership check, test later" — which has saved me from forgetting promising leads more than once.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>None of these tools are exotic or hard to find — most appear on every "top recon tools" list you'll come across. The value isn't in knowing they exist, it's in running them consistently, in a sensible order, and actually reading the output carefully instead of rushing to the next tool. The widest possible view of the target, built methodically, is what makes the rest of the engagement easier.</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">Why recon decides it</a></li>
+          <li><a href="#subdomains">Subdomain enumeration</a></li>
+          <li><a href="#alive">Filtering for alive hosts</a></li>
+          <li><a href="#content-discovery">Content discovery</a></li>
+          <li><a href="#vuln-scanning">Lightweight scanning</a></li>
+          <li><a href="#organising">Keeping it organised</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="blog-ssrf-rce.html" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">Chaining SSRF with AWS Instance Metadata to Achieve RCE</div>
+        </a>
+        <a href="blog-idor.html" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Why IDOR Vulnerabilities Are Still Everywhere in 2026</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Found this useful?</h2>
+      <p>If you have a system that needs testing, I bring the same methodical recon process to every engagement.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
