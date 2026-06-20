@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bypassing 2FA With a Race Condition — HackTheBox: Vault — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--ctf">CTF Write-up</span>
+        <span class="blog-difficulty blog-difficulty--intermediate">Intermediate</span>
+      </div>
+      <h1>Bypassing 2FA With a Race Condition — HackTheBox: Vault</h1>
+      <p class="post-hero-sub">Two-factor authentication is supposed to stop attackers in their tracks. On this box, a timing flaw in the OTP validation logic made it possible to bypass 2FA entirely using a multithreaded brute-force approach.</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> April 30, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 14 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">When "secure" authentication has a timing problem</h2>
+        <p>Two-factor authentication is one of those controls that gets treated as a solved problem. Add a six-digit OTP step after the password, and the login flow is considered secure by default. This box was a good reminder that the implementation of 2FA matters just as much as the presence of it — and that a control which is logically sound but poorly implemented can be bypassed without ever touching the "secure" part directly.</p>
+        <p>The vulnerability here was not in the OTP generation itself. The code was a standard six-digit, time-based code. The flaw was in how the server validated attempts against it.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="login-flow">Mapping the login flow</h2>
+        <p>The application's login process was a standard two-step flow: submit a username and password, then submit a six-digit OTP code on a second screen. Intercepting the requests in Burp Suite showed the structure clearly:</p>
+
+        <div class="post-code">POST /api/auth/login
+{"username": "admin", "password": "********"}
+
+<span class="code-comment"># Returns a temporary session token tied to the pending 2FA challenge</span>
+{"status": "2fa_required", "challenge_token": "9f8a3c..."}
+
+POST /api/auth/verify-otp
+{"challenge_token": "9f8a3c...", "otp": "000000"}</div>
+
+        <p>The natural first question with any OTP verification endpoint is whether it rate-limits failed attempts. Submitting a handful of incorrect codes in sequence confirmed it did — after five failed attempts, the challenge token was invalidated and the user had to restart the login flow from the password step.</p>
+
+        <p>Five attempts against a six-digit code (one million possibilities) is nowhere near enough for a naive sequential brute-force. Rate limiting alone made this approach a dead end — at least, sequentially.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="the-flaw">Finding the race condition</h2>
+        <p>The rate-limiting logic worked by incrementing an attempt counter in the database after each failed OTP check, then checking that counter on the next request. The important detail — confirmed by testing — was that the counter increment happened <em>after</em> the OTP comparison completed, not before it.</p>
+
+        <div class="post-callout">
+          <strong>Why this matters</strong>
+          If the attempt counter is only checked and incremented sequentially, but several requests arrive at the server at nearly the same instant, each one can read the counter's value before any of the others have finished writing their increment. All of them see "4 attempts used" and proceed, even though five, ten, or twenty requests are in flight simultaneously.
+        </div>
+
+        <p>This is a classic time-of-check to time-of-use (TOCTOU) race condition. The fix the developers intended — locking the account after five failed attempts — only works if attempts are processed one at a time. Fire enough requests at the server concurrently, and the rate limit's enforcement point can be raced past entirely.</p>
+
+        <h2 id="exploit">Building the exploit</h2>
+        <p>The approach: rather than guessing OTPs one at a time and respecting the rate limit, fire a large batch of guesses at the verification endpoint simultaneously, betting that several of them will land inside the same race window before the account locks.</p>
+
+        <p>Six-digit codes are still a million possibilities — too many to brute-force outright even with concurrency. But this server also revealed, through a slightly different bug, that the verification endpoint's response timing differed subtly when the first few digits of the OTP were correct versus completely wrong. That timing variation made a digit-by-digit approach far more practical than a flat brute-force of the full code space.</p>
+
+        <div class="post-code"><span class="code-comment"># Simplified concurrent request script (Python, using threads)</span>
+import requests
+import threading
+
+URL = "https://target.htb/api/auth/verify-otp"
+TOKEN = "9f8a3c..."
+
+def try_otp(code):
+    r = requests.post(URL, json={
+        "challenge_token": TOKEN,
+        "otp": code
+    })
+    if r.status_code == 200:
+        print(f"[+] Valid OTP found: {code}")
+
+<span class="code-comment"># Fire a batch of candidate codes concurrently to race the rate limiter</span>
+candidates = [f"{i:06d}" for i in range(0, 50)]
+threads = [threading.Thread(target=try_otp, args=(c,)) for c in candidates]
+
+for t in threads:
+    t.start()
+for t in threads:
+    t.join()</div>
+
+        <p>Sending these requests using threads rather than sequentially meant they hit the server close enough together that several were processed before the rate-limit counter caught up. Repeating this in narrowed batches — using the timing signal to prioritise which digit ranges to test first — eventually surfaced the correct OTP without ever triggering a full lockout.</p>
+
+        <div class="post-callout">
+          <strong>Tip from practice</strong>
+          Burp Suite's <strong>Turbo Intruder</strong> extension is purpose-built for this kind of race condition testing — it can fire requests with much tighter timing precision than a basic threaded script, which matters a lot when the race window is only a few milliseconds wide.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="why-it-matters">Why this kind of bug is easy to miss</h2>
+        <p>Race conditions in authentication flows are dangerous specifically because they are invisible in normal testing. A manual tester submitting OTPs one at a time, the way a real user would, will hit the rate limit exactly as intended and conclude the control works. The vulnerability only appears under concurrent load, which most functional and even most security testing does not naturally generate.</p>
+        <p>This is also a good example of why automated scanners rarely catch this class of bug — there is nothing syntactically wrong with the code. The logic is correct in isolation. It only breaks under a specific concurrency condition that has to be deliberately constructed.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="fixing-it">How this gets fixed</h2>
+        <ul>
+          <li><strong>Atomic counter operations.</strong> The attempt count and the lockout check need to happen as a single atomic database operation, not a separate read-then-write, so concurrent requests cannot all read the same stale value.</li>
+          <li><strong>Application-level locking.</strong> A mutex or distributed lock keyed on the challenge token would force concurrent verification attempts for the same session to be processed sequentially rather than in parallel.</li>
+          <li><strong>Consistent response timing.</strong> Verification responses should take a constant amount of time regardless of how much of the OTP was correct, removing the timing side-channel that made narrowing down the code practical in the first place.</li>
+          <li><strong>IP and device-level throttling</strong> in addition to per-session counters, so that even a successful race against one challenge token doesn't scale into rapid-fire attempts across many sessions.</li>
+        </ul>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>This box was a useful reminder that "we have rate limiting" is not the same as "we have rate limiting that holds up under concurrency." Race conditions are one of the more subtle vulnerability classes to test for, precisely because the obvious manual testing approach — trying things one at a time — can never reveal them. If you're testing authentication flows, it's worth deliberately asking: what happens if I send all of these requests at once instead of one after another?</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">A timing problem</a></li>
+          <li><a href="#login-flow">Mapping the login flow</a></li>
+          <li><a href="#the-flaw">Finding the race condition</a></li>
+          <li><a href="#exploit">Building the exploit</a></li>
+          <li><a href="#why-it-matters">Why this bug is easy to miss</a></li>
+          <li><a href="#fixing-it">How this gets fixed</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="blog-recon-toolkit.html" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">My Go-To Recon Toolkit for Web App Engagements</div>
+        </a>
+        <a href="blog.html" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Back to all posts</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Found this useful?</h2>
+      <p>If you have a system that needs testing, I offer web application pen-tests that cover authentication and session management flaws like this one.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
