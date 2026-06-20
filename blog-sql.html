@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Injection to Domain Admin — A Full Internal Network Pwn — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--ctf">CTF Write-up</span>
+        <span class="blog-difficulty blog-difficulty--advanced">Advanced</span>
+      </div>
+      <h1>SQL Injection to Domain Admin — A Full Internal Network Pwn</h1>
+      <p class="post-hero-sub">Starting from a blind SQL injection in a login form, this HackTheBox Pro Lab walkthrough covers the full path from initial foothold to domain administrator.</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> February 20, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 18 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">From a login form to the entire domain</h2>
+        <p>This Pro Lab is a good example of why a single web application vulnerability should never be assessed in isolation. What started as a blind SQL injection in an internal HR portal's login form eventually led to full domain administrator access across the lab's Active Directory environment. No individual step in this chain was especially exotic — the value of the write-up is in the path itself, and what it says about how real internal compromises tend to unfold.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="initial-access">Finding the SQL injection</h2>
+        <p>The HR portal's login form was the obvious starting point. Submitting a single quote in the username field returned a generic error page rather than a database error — meaning this wasn't going to be a simple error-based injection. Time-based blind testing confirmed the parameter was injectable:</p>
+
+        <div class="post-code">POST /login HTTP/1.1
+Host: hr.corp.local
+
+username=admin' AND SLEEP(5)-- -&password=x</div>
+
+        <p>A five-second delay in the response confirmed the injection point. From here, <code>sqlmap</code> handled extraction far more efficiently than manual time-based queries:</p>
+
+        <div class="post-code">sqlmap -u "http://hr.corp.local/login" \
+  --data="username=admin&password=x" \
+  -p username --technique=T --batch --dump</div>
+
+        <p>The dumped credentials table contained hashed passwords for several internal accounts, including one belonging to an IT support user. The hash cracked quickly against a standard wordlist — a reminder that even when the injection itself is sophisticated, the resulting credentials are often only as strong as the organisation's password policy.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="foothold">Establishing a foothold</h2>
+        <p>The cracked IT support credentials worked for both the HR portal and, after testing, for SMB authentication on the internal network — credential reuse across systems that should have been segmented. Enumerating accessible shares with these credentials surfaced a writable directory used for IT support ticket attachments.</p>
+
+        <div class="post-code"><span class="code-comment"># Enumerate accessible SMB shares with the recovered credentials</span>
+smbclient -L //10.10.20.5 -U itsupport%CrackedPassword123
+
+<span class="code-comment"># Writable share found — used for ticket attachments</span>
+smb: \&gt; put shell.aspx</div>
+
+        <p>The ticketing web application, accessible on the internal network, would periodically process new attachments in that directory — and critically, files with an <code>.aspx</code> extension placed there were directly web-accessible and would execute. Uploading a simple ASP.NET web shell and browsing to it provided code execution on the ticketing server.</p>
+
+        <div class="post-callout">
+          <strong>Why this kind of gap is common internally</strong>
+          Internal applications are frequently held to a lower security bar than public-facing ones, on the assumption that the network perimeter is the real defence. File upload validation, in particular, is often weaker on internal-only tools — exactly the kind of gap that becomes critical once an attacker has any foothold at all on the internal network.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="lateral-movement">Lateral movement and credential harvesting</h2>
+        <p>With code execution on the ticketing server, the next step was harvesting additional credentials from memory. The server had been joined to the domain, and a domain service account had recently authenticated to it for a scheduled task — leaving recoverable credential material in memory.</p>
+
+        <div class="post-code"><span class="code-comment"># Dumping credentials from LSASS memory using Mimikatz</span>
+mimikatz # privilege::debug
+mimikatz # sekurlsa::logonpasswords</div>
+
+        <p>This surfaced NTLM hashes for a domain service account — <code>svc_backup</code> — used for scheduled backup jobs across multiple servers. A quick BloodHound collection against the domain revealed that this account, while unprivileged on its face, had been granted <code>GenericAll</code> rights over a security group that was nested inside Domain Admins — almost certainly an oversight from a past permissions change that was never cleaned up.</p>
+
+        <div class="post-code"><span class="code-comment"># Using the harvested hash to authenticate without cracking it</span>
+evil-winrm -i 10.10.20.10 -u svc_backup -H NTLM_HASH_HERE</div>
+
+        <hr class="post-divider">
+
+        <h2 id="privesc">From a nested group to Domain Admin</h2>
+        <p>The <code>GenericAll</code> permission on the security group meant <code>svc_backup</code> could add arbitrary members to that group — including itself. Since the group was nested inside Domain Admins, adding <code>svc_backup</code> to it was functionally equivalent to granting it domain administrator privileges directly.</p>
+
+        <div class="post-code"><span class="code-comment"># Abusing GenericAll to add svc_backup to the privileged nested group</span>
+net rpc group addmem "Backup Operators Delegated" svc_backup \
+  -U svc_backup -S 10.10.20.10</div>
+
+        <p>BloodHound's attack path graph made this privilege escalation route obvious almost immediately once the collection data was loaded — this is exactly the kind of indirect, multi-hop permission relationship that is extremely difficult to spot by manually reviewing group memberships, but trivial to identify once visualised as a graph.</p>
+
+        <div class="post-callout">
+          <strong>Tip from practice</strong>
+          Run a BloodHound collection as early as possible once you have any valid domain credentials, even low-privileged ones. Nested group permissions like this one are one of the most common privilege escalation paths in real Active Directory environments, and they're consistently underestimated during manual review.
+        </div>
+
+        <p>From there, authenticating as <code>svc_backup</code> with effective Domain Admin rights provided full control over the domain — DCSync rights to extract every credential hash in Active Directory, and the ability to authenticate to any domain-joined machine, including the domain controller itself.</p>
+
+        <div class="post-code"><span class="code-comment"># Extracting the krbtgt hash and all domain credentials via DCSync</span>
+secretsdump.py corp.local/svc_backup@10.10.20.1 -hashes :NTLM_HASH_HERE</div>
+
+        <hr class="post-divider">
+
+        <h2 id="why-it-matters">Why this chain matters</h2>
+        <p>Every step in this path, taken individually, is a known and well-documented technique. What makes the overall chain dangerous is how naturally it flows from one weakness to the next: weak credential hygiene led to internal access, lax file upload controls on an internal tool led to code execution, normal administrative activity left credentials recoverable in memory, and a forgotten nested group permission turned an ordinary service account into a path to full domain compromise.</p>
+        <p>This is the pattern behind most real-world Active Directory compromises. Attackers rarely need a single dramatic zero-day — they need a handful of individually unremarkable misconfigurations that happen to connect.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="fixing-it">How this gets fixed</h2>
+        <ul>
+          <li><strong>Parameterised queries everywhere</strong> — the SQL injection at the start of this chain should never have been possible with modern query builders or ORMs in use.</li>
+          <li><strong>Unique credentials per system</strong>, enforced through a password manager or SSO, so a single cracked hash doesn't grant access across unrelated services.</li>
+          <li><strong>Strict file upload validation</strong> on internal applications held to the same standard as public-facing ones — extension allow-lists, content-type verification, and storing uploads outside any web-executable directory.</li>
+          <li><strong>Credential Guard or equivalent LSASS protections</strong> to make in-memory credential harvesting significantly harder even with local administrative access.</li>
+          <li><strong>Regular BloodHound audits</strong> of the production Active Directory environment to catch exactly this kind of unintended nested-group privilege escalation path before an attacker does.</li>
+        </ul>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>This lab is a good reminder that internal network security deserves the same rigor as the public perimeter — and that Active Directory privilege escalation paths are rarely a single obvious misconfiguration. They're usually a chain of small, individually defensible decisions that nobody connected until it was too late. If you're learning Active Directory attack paths, getting comfortable with BloodHound early will save you far more time than trying to manually trace permission relationships by hand.</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">From login form to domain</a></li>
+          <li><a href="#initial-access">Finding the SQL injection</a></li>
+          <li><a href="#foothold">Establishing a foothold</a></li>
+          <li><a href="#lateral-movement">Lateral movement</a></li>
+          <li><a href="#privesc">Nested group to Domain Admin</a></li>
+          <li><a href="#why-it-matters">Why this chain matters</a></li>
+          <li><a href="#fixing-it">How this gets fixed</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="blog-burp-extensions.html" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">Burp Suite Extensions That Actually Save Time</div>
+        </a>
+        <a href="blog.html" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Back to all posts</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Found this useful?</h2>
+      <p>If you have an internal network that needs testing, I offer network pen-tests covering exactly this kind of attack chain.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
