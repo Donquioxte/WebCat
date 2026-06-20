@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breaking JWT Authentication — Common Misconfigurations Developers Make — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--research">Research</span>
+        <span class="blog-difficulty blog-difficulty--intermediate">Intermediate</span>
+      </div>
+      <h1>Breaking JWT Authentication — Common Misconfigurations Developers Make</h1>
+      <p class="post-hero-sub">JSON Web Tokens are everywhere, and the spec itself is reasonably solid. The vulnerabilities almost always come from how it gets implemented — not from the standard itself.</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> March 10, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 11 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">A solid spec, undermined by implementation</h2>
+        <p>JSON Web Tokens have become the default way modern applications handle stateless authentication. The format itself — a signed, base64-encoded JSON structure — is well-designed for its purpose. The vulnerabilities that show up in real-world testing almost never come from a flaw in the JWT specification. They come from developers trusting the token's contents without properly verifying how it was signed, or implementing the verification logic in a way that quietly accepts tokens it shouldn't.</p>
+        <p>This post walks through the JWT misconfigurations I encounter most often during web application assessments, starting with the structure of a token itself.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="anatomy">The anatomy of a JWT</h2>
+        <p>A JWT consists of three base64url-encoded segments separated by dots: a header, a payload, and a signature.</p>
+
+        <div class="post-code"><span class="code-comment"># Header — declares the signing algorithm</span>
+{"alg": "HS256", "typ": "JWT"}
+
+<span class="code-comment"># Payload — the actual claims (user data, expiry, etc.)</span>
+{"sub": "1042", "role": "user", "exp": 1781234567}
+
+<span class="code-comment"># All three segments combined and signed</span>
+header.payload.signature</div>
+
+        <p>The critical detail is that the header and payload are only <em>encoded</em>, not encrypted. Anyone can decode and read them without knowing the signing key. The signature is the only thing standing between "this token says I'm an admin" and the server actually believing it. Every vulnerability in this post is really a variation on attackers finding a way to make the server accept a forged or manipulated signature — or skip verifying it at all.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="alg-none">The "none" algorithm attack</h2>
+        <p>The JWT specification includes a legitimate <code>none</code> algorithm, intended for cases where the token doesn't need a signature at all. Some JWT libraries, particularly older or poorly maintained ones, will honour this header value and skip signature verification entirely if the server's verification code doesn't explicitly reject it.</p>
+
+        <div class="post-code"><span class="code-comment"># Original token header</span>
+{"alg": "HS256", "typ": "JWT"}
+
+<span class="code-comment"># Attacker-modified header, with the signature stripped</span>
+{"alg": "none", "typ": "JWT"}</div>
+
+        <p>If the verification library trusts the algorithm specified in the token's own header rather than enforcing an expected algorithm server-side, an attacker can simply set <code>alg</code> to <code>none</code>, modify the payload to whatever they want — <code>"role": "admin"</code>, for instance — and remove the signature segment entirely. A vulnerable server will accept this token as valid.</p>
+
+        <div class="post-callout">
+          <strong>Why this still happens</strong>
+          The root cause is almost always the same: the server's verification logic reads the algorithm to use from the token itself, instead of having a hardcoded, expected algorithm configured independently. Trusting client-supplied input to decide how that same input should be verified is the recurring theme across nearly every JWT vulnerability.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="alg-confusion">Algorithm confusion — RS256 to HS256</h2>
+        <p>This is a more subtle and more damaging variant. Many applications use RS256, an asymmetric algorithm where the server signs tokens with a private key and verifies them with a corresponding public key. The public key, by design, is not secret — it is often even exposed at a known endpoint or embedded in client-side code.</p>
+        <p>The vulnerability occurs when the server's verification code does not distinguish between algorithms correctly. Some JWT libraries pass whatever key is configured into a generic "verify" function based on the algorithm specified in the token header — and if an attacker sets the header to <code>HS256</code> (a symmetric algorithm using a shared secret), the library may use the public RSA key as the HMAC secret for verification:</p>
+
+        <div class="post-code"><span class="code-comment"># Forging a token using the server's own public key as the HMAC secret</span>
+import jwt
+
+public_key = open("server_public_key.pem").read()
+
+forged_token = jwt.encode(
+    {"sub": "1042", "role": "admin"},
+    public_key,
+    algorithm="HS256"
+)</div>
+
+        <p>Since the attacker knows the public key (it's public, after all) and the server is unknowingly using it as an HMAC secret to verify HS256 signatures, the forged token passes verification. This single misconfiguration can fully compromise the token-based trust model — effectively letting an attacker sign their own admin tokens.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="weak-secrets">Weak or guessable HMAC secrets</h2>
+        <p>For applications using HS256 correctly, the security of every issued token depends entirely on the secrecy and strength of the signing key. Short, predictable, or accidentally committed secrets are common enough that brute-forcing them is a standard part of JWT testing.</p>
+
+        <div class="post-code"><span class="code-comment"># Brute-forcing a weak HMAC secret offline using a wordlist</span>
+jwt_tool eyJhbGciOiJIUzI1NiJ9... -C -d /usr/share/wordlists/rockyou.txt</div>
+
+        <p>Once the secret is recovered, an attacker can sign arbitrary tokens with any claims they like — full account takeover, privilege escalation, the works — entirely offline, without ever interacting with the live server again until they submit the forged token.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="missing-validation">Missing expiry and claim validation</h2>
+        <p>Even with a properly signed token, the application still needs to validate its claims on every request — not just at issuance. Common gaps include:</p>
+        <ul>
+          <li><strong>Not checking <code>exp</code> server-side</strong>, relying instead on the client to discard expired tokens, which an attacker can simply ignore.</li>
+          <li><strong>Not validating the <code>aud</code> (audience) claim</strong>, allowing a token issued for one service to be replayed against a different one that shares the same signing key.</li>
+          <li><strong>Trusting role or permission claims embedded in the token</strong> without re-checking them against the current state of the user's account — meaning a role change or account suspension has no effect until the token naturally expires.</li>
+        </ul>
+
+        <hr class="post-divider">
+
+        <h2 id="testing">How I test for JWT issues</h2>
+        <ol>
+          <li>Decode the token and inspect the header and payload for anything unexpected — role claims, internal IDs, debug flags.</li>
+          <li>Try the <code>none</code> algorithm attack by stripping the signature and setting <code>alg</code> to <code>none</code>.</li>
+          <li>If RS256 is in use, attempt the algorithm confusion attack using any discoverable public key.</li>
+          <li>Attempt to brute-force the signing secret offline if HS256 is used.</li>
+          <li>Tamper with claims (role, user ID, expiry) and resubmit with the original signature to confirm the server actually re-validates the signature against the modified payload.</li>
+          <li>Check whether an expired token is still accepted by the server.</li>
+        </ol>
+
+        <p>Tools like <code>jwt_tool</code> automate most of this process and are a good starting point, but understanding what each test is actually checking for matters more than memorising the tool's flags.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="fixing-it">How this gets fixed</h2>
+        <ul>
+          <li><strong>Hardcode the expected algorithm</strong> on the server side rather than reading it from the token header.</li>
+          <li><strong>Never use the same key type for both signing and verification</strong> across algorithm types — keep RS256 and HS256 verification logic strictly separate.</li>
+          <li><strong>Use long, randomly generated secrets</strong> for HS256 — at least 256 bits of entropy, stored outside of source control.</li>
+          <li><strong>Validate every claim that matters on every request</strong> — expiry, audience, issuer — not just at login.</li>
+          <li><strong>Keep token lifetimes short</strong> and pair them with a refresh token flow, so a compromised access token has a limited window of usefulness.</li>
+        </ul>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>JWT vulnerabilities are a good example of a broader pattern in security testing: the underlying technology is sound, but trusting client-controlled input to determine how that same input gets validated creates a loophole almost every time. When testing any JWT-based authentication system, the first question worth asking is not "is the signature valid" but "what is actually deciding how the signature gets checked" — and whether an attacker has any influence over that decision.</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">A solid spec, undermined</a></li>
+          <li><a href="#anatomy">Anatomy of a JWT</a></li>
+          <li><a href="#alg-none">The "none" algorithm attack</a></li>
+          <li><a href="#alg-confusion">Algorithm confusion</a></li>
+          <li><a href="#weak-secrets">Weak signing secrets</a></li>
+          <li><a href="#missing-validation">Missing claim validation</a></li>
+          <li><a href="#testing">How I test for JWT issues</a></li>
+          <li><a href="#fixing-it">How this gets fixed</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="blog-2fa-race.html" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">Bypassing 2FA With a Race Condition — HackTheBox: Vault</div>
+        </a>
+        <a href="blog.html" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Back to all posts</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Found this useful?</h2>
+      <p>If you have a system that needs testing, I offer web application pen-tests that cover authentication, session management, and the full OWASP Top 10.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
