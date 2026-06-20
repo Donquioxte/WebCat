@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burp Suite Extensions That Actually Save Time — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--tools">Tools</span>
+        <span class="blog-difficulty blog-difficulty--beginner">Beginner</span>
+      </div>
+      <h1>Burp Suite Extensions That Actually Save Time</h1>
+      <p class="post-hero-sub">The BApp Store has hundreds of extensions. Most aren't worth installing. These are the ones I actually keep enabled on every engagement — and why each one earns its place.</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> March 28, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 9 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">Curation beats collection</h2>
+        <p>It's tempting, especially early on, to install every extension in the BApp Store that sounds useful. In practice, a cluttered extension list slows Burp down, adds noise to your scan results, and makes it harder to find the tool you actually need in the moment. A small, well-chosen set of extensions consistently outperforms a large unfocused one.</p>
+        <p>These are the extensions that have earned a permanent place in my setup, grouped by what stage of testing they help with.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="authz">Authorize — automated access control testing</h2>
+        <p>Authorize is built specifically for testing broken access control and IDOR-style vulnerabilities. Once configured with a low-privilege session token, it automatically replays every request that passes through Burp using that lower-privilege session, and flags any response that returns the same data as the original higher-privilege request.</p>
+
+        <div class="post-code"><span class="code-comment"># Conceptually, Authorize is doing this for every request automatically:</span>
+GET /api/orders/5001          [as User A — 200 OK, full order data]
+GET /api/orders/5001          [replayed as User B via Authorize — 200 OK?]</div>
+
+        <p>Running this passively in the background while you browse the application manually means access control gaps surface as you go, instead of requiring a separate dedicated pass at the end of testing. It won't catch every IDOR — business logic context still matters — but it catches a large share of the obvious ones with almost no extra effort.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="jwt-editor">JWT Editor — manipulating tokens in-flight</h2>
+        <p>For any engagement involving JWT-based authentication, this extension is close to essential. It adds a dedicated tab for decoding, editing, and re-signing JSON Web Tokens directly inside Burp, without needing to shell out to a separate CLI tool every time you want to test a claim manipulation.</p>
+
+        <div class="post-callout">
+          <strong>Why this beats manual decoding</strong>
+          JWT Editor lets you generate and manage signing keys directly inside Burp, then test algorithm confusion and signature-stripping attacks by editing the token and immediately re-sending the request — all without leaving the proxy history. It turns JWT testing from a multi-tool workflow into a few clicks.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="param-miner">Param Miner — finding hidden parameters and headers</h2>
+        <p>Param Miner brute-forces hidden, unlinked parameters and HTTP headers that an application's backend silently accepts but never exposes in its visible UI. This matters because hidden parameters are disproportionately likely to be missing proper validation — nobody is actively maintaining input handling for a parameter they forgot exists.</p>
+
+        <div class="post-code"><span class="code-comment"># Conceptually, Param Miner sends variations like:</span>
+GET /api/search?q=test&debug=true
+GET /api/search?q=test&internal_override=1
+GET /api/search?q=test
+X-Forwarded-Host: attacker-controlled.com</div>
+
+        <p>It's also one of the more reliable tools for surfacing web cache poisoning vulnerabilities, since it's specifically built to detect unkeyed inputs that influence cached responses — a class of bug that is genuinely hard to find by hand.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="turbo-intruder">Turbo Intruder — high-precision timing attacks</h2>
+        <p>Standard Burp Intruder is fine for most brute-force tasks, but it isn't built for attacks where request timing matters down to the millisecond — race conditions being the clearest example. Turbo Intruder uses a custom HTTP engine that can fire a large batch of requests with much tighter timing precision than the default tooling.</p>
+
+        <div class="post-code"><span class="code-comment"># Simplified Turbo Intruder script structure</span>
+def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint,
+                            concurrentConnections=20,
+                            requestsPerConnection=10)
+    for i in range(20):
+        engine.queue(target.req, gate='race1')
+    engine.openGate('race1')</div>
+
+        <p>This is the tool I reach for whenever a finding depends on getting multiple requests to land inside a narrow server-side time window — exactly the kind of scenario that comes up when testing rate limiting or account-locking logic for race conditions.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="logger-plusplus">Logger++ — better history and filtering</h2>
+        <p>Burp's default proxy history is functional but limited once a session has thousands of requests logged. Logger++ adds far more powerful filtering, search, and export options across all of Burp's tools, not just the proxy — including the ability to filter by response time, which is genuinely useful when hunting for the kind of timing anomalies that hint at SSRF or blind injection.</p>
+
+        <div class="post-callout">
+          <strong>Tip from practice</strong>
+          Filtering Logger++ by response time descending is a quick, low-effort way to spot endpoints that might be making slow backend calls — a common signal worth investigating further for SSRF, blind SQL injection, or inefficient query patterns that could indicate a denial-of-service angle.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="autorize-vs-authorize">A note on extension overlap</h2>
+        <p>A few extensions in the BApp Store solve overlapping problems — there are multiple authorization-testing extensions, multiple JWT tools, and so on. Rather than installing several that do roughly the same job, I'd rather pick one per category, learn its quirks properly, and keep the overall extension list lean. A smaller, well-understood toolkit is faster in practice than a comprehensive one you have to relearn every engagement.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>None of these extensions replace manual testing or careful thinking about an application's logic — they remove repetitive, mechanical work so more time goes toward the parts of testing that actually require a human. If you're building out your own Burp setup, I'd suggest starting with just Authorize and JWT Editor, since they cover two of the highest-value, most common vulnerability classes, and adding the others as you run into the specific problems they solve.</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">Curation beats collection</a></li>
+          <li><a href="#authz">Authorize</a></li>
+          <li><a href="#jwt-editor">JWT Editor</a></li>
+          <li><a href="#param-miner">Param Miner</a></li>
+          <li><a href="#turbo-intruder">Turbo Intruder</a></li>
+          <li><a href="#logger-plusplus">Logger++</a></li>
+          <li><a href="#autorize-vs-authorize">A note on overlap</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="blog-reading-pentest-report.html" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">How to Read a Pen-Test Report — A Guide for Non-Technical Founders</div>
+        </a>
+        <a href="blog.html" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Back to all posts</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Found this useful?</h2>
+      <p>If you have a system that needs testing, I bring exactly this kind of tooling to every engagement.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
