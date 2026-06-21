@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Actually Happens During a Penetration Test? — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Post hero -->
+  <section class="post-hero">
+    <div class="container">
+      <a href="blog.html" class="post-back">← Back to blog</a>
+      <div class="post-hero-meta">
+        <span class="blog-category blog-category--educational">Educational</span>
+        <span class="blog-difficulty blog-difficulty--beginner">Beginner</span>
+      </div>
+      <h1>What Actually Happens During a Penetration Test?</h1>
+      <p class="post-hero-sub">Most people outside the security industry have a vague idea of pen testing shaped by film and TV. Here's what a real engagement looks like, from the first phone call to the final report.</p>
+      <div class="post-info">
+        <span class="post-info-item"><strong>Published</strong> April 15, 2026</span>
+        <span class="post-info-item"><strong>Reading time</strong> 6 min</span>
+        <span class="post-info-item"><strong>Author</strong> Wil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post layout -->
+  <div class="container">
+    <div class="post-layout">
+
+      <!-- Body -->
+      <article class="post-body">
+
+        <h2 id="intro">It's less dramatic than the movies, and more useful</h2>
+        <p>Ask someone who's never worked in security what a penetration test looks like, and you'll often hear some version of "a hacker tries to break into your systems." That's not wrong exactly, but it skips almost everything that actually makes an engagement valuable. A good pen test is closer to a structured, documented process than a dramatic break-in — and understanding that process makes it much easier to know what you're paying for and what to expect.</p>
+        <p>Here's what a typical engagement actually looks like, end to end.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="scoping">Step 1 — Scoping</h2>
+        <p>Before any testing happens, there's a conversation. What systems are in scope? What's explicitly off-limits? Is this a black-box test (no prior information given) or a grey-box test (some credentials or documentation provided to focus effort on what matters)? How long will testing run, and during what hours?</p>
+        <p>This stage matters more than people expect. A poorly scoped engagement either wastes time testing things that don't matter to the business, or — worse — misses something critical because nobody flagged it as in-scope. A good tester will ask detailed questions here rather than just accepting a vague "test our website."</p>
+
+        <hr class="post-divider">
+
+        <h2 id="paperwork">Step 2 — Authorization and paperwork</h2>
+        <p>This is the unglamorous but non-negotiable part. Before a single request is sent at the target, both parties sign a few documents:</p>
+        <ul>
+          <li><strong>A non-disclosure agreement (NDA)</strong> — covering confidentiality of anything discovered during testing.</li>
+          <li><strong>Rules of engagement</strong> — the precise technical scope, testing windows, emergency contact procedures, and any systems or techniques explicitly excluded (for example, no denial-of-service testing against production).</li>
+          <li><strong>A written authorization letter</strong> — legal permission to test the specified systems. Without this, what the tester is doing is technically unauthorized computer access, regardless of good intentions.</li>
+        </ul>
+        <p>If a tester offers to skip this step, that's a red flag, not a convenience.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="recon">Step 3 — Reconnaissance</h2>
+        <p>Testing begins with mapping the attack surface — what subdomains exist, what technology is in use, what's publicly exposed that shouldn't be. This phase is methodical and often the least exciting to watch from the outside, but it's where the foundation for everything else gets laid. Skipping or rushing recon is one of the most common reasons a pen test misses something important.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="testing">Step 4 — Active testing</h2>
+        <p>This is the phase most people picture when they think of a pen test — actively probing the application or network for vulnerabilities. In practice, this is a mix of automated tooling to catch known issues quickly, and manual testing to find the things automation can't: business logic flaws, authorization gaps, and chained vulnerabilities that only become apparent with human judgment.</p>
+        <p>A good tester documents findings as they go — not just at the end — including evidence like request/response pairs or screenshots, so nothing gets lost or has to be re-discovered later when writing the report.</p>
+
+        <div class="post-callout">
+          <strong>What testers actually do, hour to hour</strong>
+          A large share of testing time is genuinely unglamorous: reading source code where available, methodically trying input variations, cross-referencing findings against known vulnerability classes, and writing detailed notes. The "exciting" moment of a successful exploit is usually a small fraction of total time spent on an engagement.
+        </div>
+
+        <hr class="post-divider">
+
+        <h2 id="reporting">Step 5 — Reporting</h2>
+        <p>Once active testing wraps up, the tester compiles everything into a report — typically including an executive summary for non-technical stakeholders, a detailed findings section with severity ratings and evidence, and clear remediation guidance for each issue. This is often the part clients value most, since it's what their engineering team will actually act on.</p>
+        <p>A report delivered without a walkthrough call is a missed opportunity on both sides. Most testers, myself included, offer a debrief call to walk through the findings, answer questions, and help prioritise what gets fixed first.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="retest">Step 6 — Remediation and retesting</h2>
+        <p>The engagement doesn't really end at report delivery. Once the development team has applied fixes, a retest verifies that the vulnerabilities were actually resolved — and not just hidden or partially patched. This step is often included in the original engagement scope rather than billed separately, since it's what actually closes the loop and turns a list of findings into a measurably more secure system.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="timeline">A realistic timeline</h2>
+        <p>For a typical web application engagement, the full process from initial scoping call to final retest might look like:</p>
+        <ul>
+          <li><strong>Week 0:</strong> Scoping call and paperwork</li>
+          <li><strong>Week 1:</strong> Active testing (recon, manual and automated testing)</li>
+          <li><strong>Week 1–2:</strong> Report writing and delivery</li>
+          <li><strong>Week 2:</strong> Debrief call with the team</li>
+          <li><strong>Week 4–6:</strong> Remediation period (client-side)</li>
+          <li><strong>Week 6–7:</strong> Retest and final confirmation</li>
+        </ul>
+        <p>Larger engagements — network tests, red team exercises — naturally extend this timeline, sometimes to several weeks of active testing alone.</p>
+
+        <hr class="post-divider">
+
+        <h2 id="conclusion">Takeaway</h2>
+        <p>A penetration test is less a dramatic break-in and more a structured, documented process designed to leave you with a clearer, evidence-backed understanding of your actual security posture — and a concrete list of what to fix. Knowing the shape of that process in advance makes it much easier to evaluate a tester, understand a proposal, and get real value out of the engagement rather than just a stack of unfamiliar findings at the end.</p>
+
+      </article>
+
+      <!-- Table of contents -->
+      <aside class="post-toc">
+        <div class="post-toc-label">On this page</div>
+        <ul class="post-toc-list">
+          <li><a href="#intro">Less dramatic, more useful</a></li>
+          <li><a href="#scoping">Scoping</a></li>
+          <li><a href="#paperwork">Authorization & paperwork</a></li>
+          <li><a href="#recon">Reconnaissance</a></li>
+          <li><a href="#testing">Active testing</a></li>
+          <li><a href="#reporting">Reporting</a></li>
+          <li><a href="#retest">Remediation & retesting</a></li>
+          <li><a href="#timeline">A realistic timeline</a></li>
+          <li><a href="#conclusion">Takeaway</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Post footer / next & prev -->
+  <div class="post-footer">
+    <div class="container">
+      <div class="post-footer-label">More posts</div>
+      <div class="post-nav">
+        <a href="blog-recon.html" class="post-nav-card">
+          <div class="post-nav-direction">← Previous</div>
+          <div class="post-nav-title">My Go-To Recon Toolkit for Web App Engagements</div>
+        </a>
+        <a href="blog-burp.html" class="post-nav-card">
+          <div class="post-nav-direction">Next →</div>
+          <div class="post-nav-title">Burp Suite Extensions That Actually Save Time</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Curious what this would look like for your systems?</h2>
+      <p>Let's talk through what a scoped engagement could look like for your environment.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
