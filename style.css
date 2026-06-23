@@ -1464,3 +1464,260 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Blog category — process/educational (light teal, distinct from research) ── */
+.blog-category--process {
+  background: #1a2a26;
+  color: #5BC9A8;
+}
+
+/* ── Tools page ── */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1px;
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tool-card {
+  background: var(--bg-card);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background 0.15s;
+}
+
+.tool-card:hover {
+  background: var(--bg-card-hover);
+}
+
+.tool-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tool-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.tool-tag {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.tool-tag--recon {
+  background: #1a2640;
+  color: #6B9FD4;
+}
+
+.tool-tag--webapp {
+  background: var(--purple-dim);
+  color: var(--accent-text);
+}
+
+.tool-tag--network {
+  background: #1a2a26;
+  color: #5BC9A8;
+}
+
+.tool-tag--exploit {
+  background: #2a1010;
+  color: #C46A6A;
+}
+
+.tool-tag--reporting {
+  background: #2a1f10;
+  color: #C49A4A;
+}
+
+.tool-tag--osint {
+  background: #1a1a2a;
+  color: #9A8FD4;
+}
+
+.tool-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.tool-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--border);
+}
+
+.tool-platform {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.tool-link {
+  font-size: 12px;
+  color: var(--purple);
+  border-bottom: 0.5px solid var(--purple-dim);
+  padding-bottom: 1px;
+  transition: border-color 0.15s;
+}
+
+.tool-link:hover {
+  border-color: var(--purple);
+}
+
+/* Category filter */
+.tools-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.tools-filter-btn {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tools-filter-btn:hover,
+.tools-filter-btn.active {
+  background: var(--purple-dim);
+  border-color: var(--purple);
+  color: var(--accent-text);
+}
+
+/* Scripts section */
+.scripts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.script-card {
+  background: var(--bg-card);
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.script-card:hover {
+  background: var(--bg-card-hover);
+}
+
+.script-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.script-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.script-lang {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 8px;
+}
+
+.script-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Resources section */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.resource-card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  transition: background 0.15s;
+}
+
+.resource-card:hover {
+  background: var(--bg-card-hover);
+}
+
+.resource-category {
+  font-size: 10px;
+  color: var(--purple);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.resource-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.resource-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.resource-link {
+  font-size: 12px;
+  color: var(--purple);
+  border-bottom: 0.5px solid var(--purple-dim);
+  padding-bottom: 1px;
+  transition: border-color 0.15s;
+}
+
+.resource-link:hover {
+  border-color: var(--purple);
+}
+
+/* Responsive — tools page */
+@media (max-width: 600px) {
+  .script-card {
+    grid-template-columns: 1fr;
+  }
+
+  .script-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
