@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVE / Hall of Fame — wil.dev</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script src="navbar.js"></script>
+
+  <!-- Page hero -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="hero-eyebrow">Responsible disclosure</div>
+      <h1>CVE & Hall of fame</h1>
+      <p>Vulnerabilities I've discovered and responsibly disclosed to vendors, and bug bounty acknowledgements from programs I've participated in.</p>
+    </div>
+  </section>
+
+  <!-- CVEs -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Disclosures</div>
+        <h2 class="section-title">CVEs</h2>
+        <p class="section-sub">Vulnerabilities discovered, reported to vendors, and assigned CVE identifiers following responsible disclosure timelines.</p>
+      </div>
+
+      <div class="cve-list">
+
+        <div class="cve-card">
+          <div class="cve-body">
+            <div class="cve-header">
+              <span class="cve-id">CVE-2025-XXXXX</span>
+              <span class="cve-severity cve-severity--critical">Critical</span>
+              <span class="cve-type">Authentication bypass</span>
+            </div>
+            <div class="cve-title">Unauthenticated remote code execution in [Vendor] web management interface</div>
+            <div class="cve-desc">A missing authentication check on a file upload endpoint in the web management interface of a widely-deployed network appliance allowed an unauthenticated remote attacker to upload and execute arbitrary files. The endpoint was intended for authenticated administrators only but was reachable without a valid session due to a missing middleware check in the routing configuration.</div>
+            <div class="cve-meta">
+              <span class="cve-meta-item"><strong>Vendor:</strong> Redacted pending full disclosure</span>
+              <span class="cve-meta-item"><strong>Reported:</strong> October 2025</span>
+              <span class="cve-meta-item"><strong>Patched:</strong> December 2025</span>
+              <span class="cve-meta-item"><strong>Disclosure:</strong> January 2026</span>
+            </div>
+          </div>
+          <div class="cve-score-box">
+            <div class="cve-score-val cve-score-val--critical">9.8</div>
+            <div class="cve-score-label">CVSS v3</div>
+          </div>
+        </div>
+
+        <div class="cve-card">
+          <div class="cve-body">
+            <div class="cve-header">
+              <span class="cve-id">CVE-2025-XXXXX</span>
+              <span class="cve-severity cve-severity--high">High</span>
+              <span class="cve-type">IDOR</span>
+            </div>
+            <div class="cve-title">Insecure direct object reference in [Vendor] document sharing API</div>
+            <div class="cve-desc">A document sharing API endpoint accepted a document ID parameter and returned the full document content without verifying that the requesting user had been granted access. An authenticated but unprivileged user could enumerate other users' private documents by iterating the numeric document ID, bypassing the application's access control model entirely.</div>
+            <div class="cve-meta">
+              <span class="cve-meta-item"><strong>Vendor:</strong> Redacted</span>
+              <span class="cve-meta-item"><strong>Reported:</strong> July 2025</span>
+              <span class="cve-meta-item"><strong>Patched:</strong> August 2025</span>
+              <span class="cve-meta-item"><strong>Disclosure:</strong> October 2025</span>
+            </div>
+          </div>
+          <div class="cve-score-box">
+            <div class="cve-score-val cve-score-val--high">7.5</div>
+            <div class="cve-score-label">CVSS v3</div>
+          </div>
+        </div>
+
+        <div class="cve-card">
+          <div class="cve-body">
+            <div class="cve-header">
+              <span class="cve-id">CVE-2024-XXXXX</span>
+              <span class="cve-severity cve-severity--high">High</span>
+              <span class="cve-type">SSRF</span>
+            </div>
+            <div class="cve-title">Server-side request forgery in [Vendor] link preview feature</div>
+            <div class="cve-desc">A link preview feature in a widely-used productivity application failed to restrict requests to external URLs, allowing an authenticated user to make the server issue requests to internal network addresses including cloud provider metadata endpoints. When deployed in cloud environments, this permitted extraction of instance metadata including temporary IAM credentials.</div>
+            <div class="cve-meta">
+              <span class="cve-meta-item"><strong>Vendor:</strong> Redacted</span>
+              <span class="cve-meta-item"><strong>Reported:</strong> March 2024</span>
+              <span class="cve-meta-item"><strong>Patched:</strong> May 2024</span>
+              <span class="cve-meta-item"><strong>Disclosure:</strong> August 2024</span>
+            </div>
+          </div>
+          <div class="cve-score-box">
+            <div class="cve-score-val cve-score-val--high">8.1</div>
+            <div class="cve-score-label">CVSS v3</div>
+          </div>
+        </div>
+
+        <div class="cve-card">
+          <div class="cve-body">
+            <div class="cve-header">
+              <span class="cve-id">CVE-2024-XXXXX</span>
+              <span class="cve-severity cve-severity--medium">Medium</span>
+              <span class="cve-type">JWT misconfiguration</span>
+            </div>
+            <div class="cve-title">Algorithm confusion in [Vendor] authentication library allows token forgery</div>
+            <div class="cve-desc">An open-source authentication library failed to enforce a server-side expected algorithm when verifying JSON Web Tokens, instead trusting the algorithm specified in the token header. This allowed an attacker in possession of the server's RSA public key to forge arbitrary tokens signed with HMAC-SHA256, effectively bypassing authentication for any application using the affected library version.</div>
+            <div class="cve-meta">
+              <span class="cve-meta-item"><strong>Vendor:</strong> Open-source project (GitHub)</span>
+              <span class="cve-meta-item"><strong>Reported:</strong> January 2024</span>
+              <span class="cve-meta-item"><strong>Patched:</strong> January 2024</span>
+              <span class="cve-meta-item"><strong>Disclosure:</strong> February 2024</span>
+            </div>
+          </div>
+          <div class="cve-score-box">
+            <div class="cve-score-val cve-score-val--medium">6.8</div>
+            <div class="cve-score-label">CVSS v3</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Hall of fame -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Bug bounty</div>
+        <h2 class="section-title">Hall of fame acknowledgements</h2>
+        <p class="section-sub">Recognition from bug bounty programs and responsible disclosure programs I've participated in.</p>
+      </div>
+
+      <div class="hof-grid">
+
+        <div class="hof-card">
+          <div class="hof-company">Major E-commerce Platform</div>
+          <div class="hof-program">Private bug bounty program</div>
+          <div class="hof-findings">
+            <div class="hof-finding">IDOR on order history API</div>
+            <div class="hof-finding">Stored XSS in product reviews</div>
+          </div>
+          <a href="#" class="hof-link">View acknowledgement ↗</a>
+        </div>
+
+        <div class="hof-card">
+          <div class="hof-company">Regional Banking Application</div>
+          <div class="hof-program">Responsible disclosure program</div>
+          <div class="hof-findings">
+            <div class="hof-finding">Broken access control on account statements</div>
+            <div class="hof-finding">Missing rate limiting on OTP endpoint</div>
+          </div>
+          <a href="#" class="hof-link">View acknowledgement ↗</a>
+        </div>
+
+        <div class="hof-card">
+          <div class="hof-company">Open Source Project</div>
+          <div class="hof-program">GitHub security advisory</div>
+          <div class="hof-findings">
+            <div class="hof-finding">JWT algorithm confusion (CVE-2024-XXXXX)</div>
+            <div class="hof-finding">Missing token expiry validation</div>
+          </div>
+          <a href="#" class="hof-link">View advisory ↗</a>
+        </div>
+
+        <div class="hof-card">
+          <div class="hof-company">SaaS Productivity Tool</div>
+          <div class="hof-program">Public bug bounty program</div>
+          <div class="hof-findings">
+            <div class="hof-finding">SSRF in link preview feature (CVE-2024-XXXXX)</div>
+          </div>
+          <a href="#" class="hof-link">View acknowledgement ↗</a>
+        </div>
+
+        <div class="hof-card">
+          <div class="hof-company">African Fintech Platform</div>
+          <div class="hof-program">Responsible disclosure program</div>
+          <div class="hof-findings">
+            <div class="hof-finding">Mass assignment on user profile endpoint</div>
+            <div class="hof-finding">Cleartext credentials in API error responses</div>
+          </div>
+          <a href="#" class="hof-link">View acknowledgement ↗</a>
+        </div>
+
+        <div class="hof-card">
+          <div class="hof-company">Network Appliance Vendor</div>
+          <div class="hof-program">Vendor security advisory</div>
+          <div class="hof-findings">
+            <div class="hof-finding">Unauthenticated RCE (CVE-2025-XXXXX)</div>
+          </div>
+          <a href="#" class="hof-link">View advisory ↗</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Responsible disclosure policy -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">How I disclose</div>
+        <h2 class="section-title">Responsible disclosure policy</h2>
+      </div>
+
+      <div class="disclosure-card">
+        <div class="disclosure-body">
+          <h3>My approach</h3>
+          <p>When I discover a vulnerability — whether during authorised testing, personal research, or CTF-adjacent exploration — I follow a consistent responsible disclosure process. The goal is to give vendors enough time to patch before any public details are shared, while maintaining accountability for fixes actually happening.</p>
+          <h3>Timeline</h3>
+          <ul class="disclosure-list">
+            <li>Initial report sent to vendor security contact within 24 hours of discovery</li>
+            <li>90-day disclosure window from date of vendor acknowledgement</li>
+            <li>Extension granted on request if a patch is actively in progress</li>
+            <li>Public disclosure after patch release or at 90-day deadline, whichever comes first</li>
+          </ul>
+        </div>
+        <div class="disclosure-body">
+          <h3>What I include in reports</h3>
+          <ul class="disclosure-list">
+            <li>Clear description of the vulnerability and affected component</li>
+            <li>Step-by-step reproduction instructions</li>
+            <li>Proof-of-concept code or screenshots where relevant</li>
+            <li>CVSS score and my assessment of impact</li>
+            <li>Suggested remediation approach</li>
+          </ul>
+          <h3>Contact</h3>
+          <p>Security researchers or vendors wanting to get in touch about a disclosure can reach me via the contact page. PGP key available on request.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Want me to look at your systems?</h2>
+      <p>This is the same attention to detail I bring to every client engagement.</p>
+      <a href="contact.html" class="btn-primary btn-primary--lg">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">wil<span>.</span>dev</div>
+        <div class="footer-links">
+          <a href="https://github.com">GitHub</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+          <a href="https://twitter.com">X / Twitter</a>
+        </div>
+        <div class="footer-copy">&copy; 2026 wil.dev — all rights reserved</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
