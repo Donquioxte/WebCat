@@ -32,11 +32,13 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label" for="name">Your name <span>*</span></label>
-                <input class="form-input" type="text" id="name" name="name" placeholder="Jane Doe" required>
+                <input class="form-input" type="text" id="name" name="name" placeholder="Jane Doe">
+                <span class="field-error" id="name-error">Please enter your name.</span>
               </div>
               <div class="form-group">
                 <label class="form-label" for="email">Email address <span>*</span></label>
-                <input class="form-input" type="email" id="email" name="email" placeholder="jane@company.com" required>
+                <input class="form-input" type="email" id="email" name="email" placeholder="jane@company.com">
+                <span class="field-error" id="email-error">Please enter a valid email address.</span>
               </div>
             </div>
 
@@ -47,7 +49,7 @@
 
             <div class="form-group">
               <label class="form-label" for="service">What are you looking for? <span>*</span></label>
-              <select class="form-select" id="service" name="service" required>
+              <select class="form-select" id="service" name="service">
                 <option value="" disabled selected>Select a service</option>
                 <option value="webapp">Web application pen-test</option>
                 <option value="network">Network pen-test</option>
@@ -55,11 +57,13 @@
                 <option value="redteam">Red team engagement</option>
                 <option value="other">Something else — I'll explain below</option>
               </select>
+              <span class="field-error" id="service-error">Please select a service.</span>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="scope">Tell me about your environment <span>*</span></label>
-              <textarea class="form-textarea" id="scope" name="scope" placeholder="What are you looking to test? Any relevant details — number of applications or hosts, technology stack, compliance requirements, timelines — help me give you a more accurate scope and quote." required></textarea>
+              <textarea class="form-textarea" id="scope" name="scope" placeholder="What are you looking to test? Any relevant details — number of applications or hosts, technology stack, compliance requirements, timelines — help me give you a more accurate scope and quote."></textarea>
+              <span class="field-error" id="scope-error">Please describe your environment (minimum 20 characters).</span>
               <p class="form-hint">The more context you can share, the faster I can come back with a realistic proposal. Nothing shared here leaves this conversation without your permission.</p>
             </div>
 
@@ -198,16 +202,7 @@
     </div>
   </footer>
 
-  <script>
-    document.getElementById('contactForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      // Replace this with your actual form submission logic
-      // e.g. fetch('/api/contact', { method: 'POST', body: new FormData(this) })
-      document.getElementById('formSuccess').style.display = 'block';
-      this.reset();
-      this.querySelector('.form-submit').style.display = 'none';
-    });
-  </script>
+  <script src="contact-validation.js"></script>
 
 </body>
 </html>
