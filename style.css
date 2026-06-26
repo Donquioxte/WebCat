@@ -2951,3 +2951,34 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Form validation styles ── */
+.form-input.error,
+.form-select.error,
+.form-textarea.error {
+  border-color: #C46A6A;
+  background: #1a1010;
+}
+
+.form-input.success,
+.form-select.success,
+.form-textarea.success {
+  border-color: #6DB86D;
+}
+
+.field-error {
+  font-size: 11px;
+  color: #C46A6A;
+  margin-top: 4px;
+  display: none;
+}
+
+.field-error.visible {
+  display: block;
+}
+
+.form-input:focus.error,
+.form-select:focus.error,
+.form-textarea:focus.error {
+  border-color: #C46A6A;
+}
