@@ -113,3 +113,7 @@ if (!window.bootstrap) {
   bsScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
   document.body.appendChild(bsScript);
 } 
+// ── Auto-inject back to top button ──
+const bttScript = document.createElement('script');
+bttScript.src = 'back-to-top.js';
+document.body.appendChild(bttScript);
