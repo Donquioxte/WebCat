@@ -17,7 +17,7 @@ const workDropdownItems = [
 ];
 
 const mainNavLinks = mainLinks.map(link => `
-  <li class="nav-item">
+  <li class="nav-item ${currentPage === link.href ? 'active' : ''}">
     <a class="nav-link ${currentPage === link.href ? 'active' : ''}" href="${link.href}">${link.label}</a>
   </li>
 `).join('');
@@ -79,6 +79,51 @@ document.body.insertAdjacentHTML('afterbegin', `
     </div>
   </nav>
 `);
+
+// ── Inject active nav styles by overriding Bootstrap CSS variables ──
+const navStyle = document.createElement('style');
+navStyle.textContent = `
+  #mainNav {
+    --bs-navbar-active-color: var(--purple);
+    --bs-navbar-hover-color: var(--nav-text);
+    --bs-navbar-color: var(--nav-muted);
+    --bs-navbar-brand-color: var(--nav-text);
+    --bs-nav-link-color: var(--nav-muted);
+    --bs-nav-link-hover-color: var(--nav-text);
+  }
+
+  @media (min-width: 992px) {
+    #mainNav .nav-item.active .nav-link::after,
+    #mainNav .nav-item .nav-link.active::after {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 2px;
+      background: var(--purple);
+      border-radius: 2px;
+    }
+
+    #mainNav .nav-item.active .nav-link,
+    #mainNav .nav-item .nav-link.active {
+      position: relative;
+      font-weight: 500;
+    }
+  }
+
+  @media (max-width: 991px) {
+    #mainNav .nav-item.active .nav-link,
+    #mainNav .nav-item .nav-link.active {
+      border-left: 2px solid var(--purple);
+      padding-left: 12px;
+      font-weight: 500;
+    }
+  }
+`;
+document.head.appendChild(navStyle);
 
 // ── Theme logic ──
 const savedTheme = localStorage.getItem('theme') || 'dark';

@@ -3102,9 +3102,43 @@ footer {
 }
 
 #mainNav .nav-link:hover,
-#mainNav .nav-link.active,
 #mainNav .nav-link.show {
   color: var(--nav-text);
+}
+
+#mainNav .navbar-nav .nav-item .nav-link.active,
+#mainNav .navbar-nav .nav-item.active .nav-link {
+  color: var(--purple) !important;
+  position: relative;
+  font-weight: 500;
+}
+
+#mainNav .navbar-nav .nav-item .nav-link.active::after,
+#mainNav .navbar-nav .nav-item.active .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: var(--purple);
+  border-radius: 2px;
+}
+
+/* Mobile active state */
+@media (max-width: 991px) {
+  #mainNav .navbar-nav .nav-item .nav-link.active::after,
+  #mainNav .navbar-nav .nav-item.active .nav-link::after {
+    display: none;
+  }
+
+  #mainNav .navbar-nav .nav-item .nav-link.active,
+  #mainNav .navbar-nav .nav-item.active .nav-link {
+    color: var(--purple) !important;
+    padding-left: 12px !important;
+    border-left: 2px solid var(--purple);
+  }
 }
 
 /* BS dropdown overrides */
