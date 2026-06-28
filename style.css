@@ -3224,3 +3224,53 @@ footer {
     height: 44px;
   }
 }
+
+/* ── Dark / light mode transition ── */
+html {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+body,
+nav,
+.service-card,
+.blog-card,
+.blog-grid-card,
+.blog-featured,
+.case-card,
+.case-stat,
+.testimonial-full-card,
+.faq-item,
+.faq-question,
+.tool-card,
+.resource-card,
+.hof-card,
+.trust-card,
+.script-card,
+.contact-info-card,
+.contact-expect-card,
+.about-profile-card,
+.about-certs-card,
+.about-skills-card,
+.service-detail-card,
+.pricing-note,
+.disclosure-card,
+.dropdown-menu,
+.form-input,
+.form-select,
+.form-textarea,
+.back-to-top,
+.proof-item,
+.cve-card,
+.case-study-card,
+.section-title,
+.section-sub,
+.hero h1,
+.hero-sub,
+footer {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
